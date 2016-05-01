@@ -7,6 +7,14 @@ const download = require('./download');
 
 const startUrl = 'http://gatherer.wizards.com/Pages/Search/Default.aspx?text=+[]';
 
+if(!fs.existsSync('output')) {
+    fs.mkdirSync('output');
+}
+
+if(!fs.existsSync('output/img')) {
+    fs.mkdirSync('output/img');
+}
+
 let allFiles = [];
 
 function getNextPage(startUrl) {
@@ -34,9 +42,12 @@ function getNextPage(startUrl) {
             console.log(page.cards[cardPage]);
             getCardDetails(url.resolve(startUrl, page.cards[cardPage].url));
         }
+
         if(page.nextLink) {
             // console.log(url.resolve(startUrl, page.nextLink));
-            getNextPage(url.resolve(startUrl, page.nextLink));
+            setTimeout(function() {
+                getNextPage(url.resolve(startUrl, page.nextLink));
+            }, 50);
         }
     })
 }
