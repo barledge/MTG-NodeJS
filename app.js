@@ -80,7 +80,7 @@ function getCardDetails(sourceUrl) {
             return console.log('Blank data from URL ', url);
         }
 
-        const filename = page.title.toLowerCase().replace(" ", "-").replace(/[^a-z0-9]/gmi, "");
+        const filename = page.title.toLowerCase().replace(" ", "-").replace(/[^a-z0-9-]/gmi, "");
 
         download(url.resolve(sourceUrl, page.image), './output/img/' + filename + '.jpg', function(err, filename) {
             if(err) {
