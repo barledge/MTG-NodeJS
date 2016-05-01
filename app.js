@@ -3,8 +3,11 @@
 const url = require("url");
 const fs = require('fs');
 const scrapeIt = require("scrape-it");
+const download = require('./download');
 
 const startUrl = 'http://gatherer.wizards.com/Pages/Search/Default.aspx?text=+[]';
+
+let allFiles = [];
 
 function getNextPage(startUrl) {
     scrapeIt(startUrl, [{
@@ -40,8 +43,8 @@ function getNextPage(startUrl) {
 
 getNextPage(startUrl);
 
-function getCardDetails(url) {
-    scrapeIt(url, [{
+function getCardDetails(sourceUrl) {
+    scrapeIt(sourceUrl, [{
         title: ".cardDetails #ctl00_ctl00_ctl00_MainContent_SubContent_SubContent_nameRow.row .value",
         image: {
             selector: "#ctl00_ctl00_ctl00_MainContent_SubContent_SubContent_leftColumn .cardImage img",
@@ -61,12 +64,39 @@ function getCardDetails(url) {
         if(err) {
             return console.log(err);
         }
-        fs.writeFile("./output/" + page.title.toLowerCase().replace(" ","-").replace("'","") + ".json", JSON.stringify(page, null, 2), function(err) {
+
+        if(!page.title) {
+            return console.log('Blank data from URL ', url);
+        }
+
+        const filename = page.title.toLowerCase().replace(" ", "-").replace(/[^a-z0-9]/gmi, "");
+
+        download(url.resolve(sourceUrl, page.image), './output/img/' + filename + '.jpg', function(err, filename) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log('Saved', filename, 'okay.')
+        });
+        page.image = './img/' + filename + '.jpg';
+
+        fs.writeFile("./output/" + filename + ".json", JSON.stringify(page, null, 2), function(err) {
             if(err) {
                 return console.log(err);
             }
 
+            allFiles.push(filename + ".json");
+            saveAllFiles();
+
             console.log("The file was saved!");
         });
+    });
+}
+
+function saveAllFiles() {
+    fs.writeFile("./output/index.json", JSON.stringify(allFiles, null, 2), function(err) {
+        if(err) {
+            return console.log(err);
+        }
+        console.log("Index updated!");
     });
 }
